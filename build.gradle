@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.4'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id "com.microsoft.azure.azurewebapp" version "1.2.0"
 }
 
 group = 'com.azure.web'
@@ -19,4 +20,43 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+azurewebapp {
+	subscription = '1063cc7c-7504-40e0-8dad-9627c9d03c29'
+	resourceGroup = 'Gradle'
+	appName = 'gradlenaresh01'
+	pricingTier = 'F1'
+	region = 'eastus'
+	runtime {
+		os = 'Linux'
+		webContainer = 'Java SE' // or 'Java SE' if you want to run an executable jar
+		javaVersion = 'Java 11'
+	}
+	auth {
+		type = 'azure_cli' // support azure_cli, oauth2, device_code and service_principal
+	}
+}
+
+bootJar {
+	archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
+	launchScript()
+}
+
+springBoot {
+	buildInfo {
+		properties {
+			group = 'com.azure.web'
+			name = 'azure-web-app'
+			version = '1.0'
+		}
+	}
+}
+
+configurations.all {
+	resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+		if (details.requested.group == 'org.apache.logging.log4j') {
+			details.useVersion '2.17.1'
+		}
+	}
 }
